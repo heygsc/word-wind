@@ -1,0 +1,207 @@
+body {
+    background-image: linear-gradient(-45deg, #2177b8 0%, #c35691 50%, #2177b8 100%);
+    background-size: 300% 300%;
+    animation: hhh 5s infinite both linear;
+    /* infinite表示动画一直循环播放
+    both表示动画效果，应该同时应用于元素的进入和离开过程
+    linear表示动画会匀速进行 */
+}
+@keyframes hhh {
+    0% {
+        background-position: 300% 300%;
+    }
+
+    33% {
+        background-position: 200% 200%;
+    }
+
+    66% {
+        background-position: 100% 100%;
+    }
+
+    100% {
+        background-position: 0% 0%;
+    }
+}
+.hello{
+    position: absolute;
+    width: 500px;
+    height: 300px;
+    background-color:rgba(255,228,196,0.7);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -90%);/* 向右x，向下y */
+    border-radius:20px;
+} 
+.author{
+    box-sizing: border-box;
+    position: fixed;
+    top: 100px;
+    height: 60px;
+    width: 230px;
+    background-color:orange;
+    margin-left: -390px;
+    padding-top: 17px;
+    border-radius: 10px;
+}
+.newpage {
+    padding-left: 13px;
+    text-decoration: none;
+    font-size: 20px;
+}
+a:hover {
+    color: black;
+}
+
+.button{
+    position: fixed;
+    width: 500px;
+    height: 100px;
+    top: 330px;
+}
+.inbutton{
+    width: 200px;
+    height: 80px;
+    border: 0;
+    border-radius:10px;
+    font-size: 2rem;
+    color: rgba(0,0,0,0.7);
+    cursor: pointer;
+}
+.left{
+    float: left; 
+    background-color:rgb(250,143,113);
+}
+.left:hover{
+    background-color:rgba(250,143,113,0.7);
+}
+.right{
+    float: right;
+    background-color:rgb(129,214,207);
+}
+.right:hover {
+    background-color: rgba(129,214,207,0.7);
+}
+.makenot{
+    position: fixed;
+    width: 500px;
+    height: 100px;
+    top: 450px;
+    left: 0;
+
+    border: 0;
+    border-radius: 10px;
+    font-size: 2rem;
+    color: rgba(0, 0, 0, 0.7);
+    background-color:rgb(248,232,174);
+
+    cursor: pointer;
+}
+
+
+.word{
+    font-size: 50px;
+}
+#map0{
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+#map1{
+    margin-left: 30px;
+    font-size: 20px;
+}
+
+.notlist{
+    position: fixed;
+    width: 250px;
+    height: 600px;
+    top: -50px;
+    left: 670px;
+    border-radius: 10px; 
+    padding: 10px;
+    background-color: rgba(255, 228, 196, 0.7);
+    overflow-y: scroll;/* 滚轮 */
+}
+
+.now{
+    position: fixed;
+    width: 450px;
+    height: 100px;
+    top: 230px;
+    left: -495px;
+    border-radius: 10px;
+
+    background-color: rgb(254,167,141);
+}
+.nownum{
+    padding-left: 13px;
+    font-size: 30px;
+    font-weight: 300;
+}
+
+.x{
+    width: 40px;
+    height: 20px;
+    border: 0;
+    border-radius: 5px;
+    background-color:rgb(230,206,230);
+    cursor: pointer;
+}
+
+.change{
+    width: 80px;
+    height: 50px; 
+    border-radius: 10px;
+    cursor: pointer;
+    box-sizing: border-box;
+    padding-left: 23px;
+    padding-top: 12px;
+    color: snow;
+}
+
+.junior{ 
+    position: fixed;
+    top: 420px;
+    left: -480px;
+    background-color: rgba(231, 90, 90, 0.942);
+}
+.senior{
+    position: fixed;
+    top: 420px;
+    left: -370px;
+    background-color: rgba(255, 98, 0, 0.867);
+}
+.cet4{
+    position: fixed;
+    top: 420px;
+    left: -260px;
+    background-color: rgba(255,255,1,0.7);
+}
+.cet6{
+    position: fixed;
+    top: 420px;
+    left: -150px;
+    background-color: rgba(90,229,36,0.6);
+}
+.postgraduate{
+    position: fixed;
+    top: 500px;
+    left: -425px;
+    background-color: rgb(58, 175, 211);
+}
+.toefl{
+    position: fixed;
+    top: 500px;
+    left: -315px;
+    background-color: skyblue;
+}
+.sat {
+    position: fixed;
+    top: 500px;
+    left: -205px;
+    background-color: rgb(228, 47, 228);
+
+    padding-left: 25px;
+}
