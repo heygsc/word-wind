@@ -23,7 +23,7 @@
 
 右面的列表就是不会的，如果某个不会的单词已经熟练，可以直接点击X按钮进行删除。
 
-## 如果这个项目对你有帮助的话，欢迎点点star⭐
+## 欢迎点点star⭐
 
 单词库来源：[https://github.com/KyleBing/english-vocabular](https://github.com/KyleBing/english-vocabulary)
 
