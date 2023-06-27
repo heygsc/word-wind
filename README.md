@@ -6,6 +6,7 @@
 
 ## 点击链接，即可访问网页版：[单词之风](https://word-wind.pages.dev/)🧭
 ## 可以进行本地部署
+## 欢迎点点star⭐
 
 本项目使用原生js构建，适配电脑端浏览器。
 
@@ -24,7 +25,7 @@
 
 右面的列表就是不会的，如果某个不会的单词已经熟练，可以直接点击X按钮进行删除。
 
-## 欢迎点点star⭐
+<hr>
 
 单词库来源：[https://github.com/KyleBing/english-vocabular](https://github.com/KyleBing/english-vocabulary)
 
