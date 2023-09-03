@@ -165,43 +165,43 @@ a:hover {
     position: fixed;
     top: 420px;
     left: -480px;
-    background-color: rgba(231, 90, 90, 0.942);
+    background-color: #de283b;
 }
 .senior{
     position: fixed;
     top: 420px;
     left: -370px;
-    background-color: rgba(255, 98, 0, 0.867);
+    background-color: #ff6366;
 }
 .cet4{
     position: fixed;
     top: 420px;
     left: -260px;
-    background-color: rgba(255,255,1,0.7);
+    background-color: #FFD700;
 }
 .cet6{
     position: fixed;
     top: 420px;
     left: -150px;
-    background-color: rgba(90,229,36,0.6);
+    background-color: #00E5FF;
 }
 .postgraduate{
     position: fixed;
     top: 500px;
     left: -425px;
-    background-color: rgb(58, 175, 211);
+    background-color: #c69fff;
 }
 .toefl{
     position: fixed;
     top: 500px;
     left: -315px;
-    background-color: skyblue;
+    background-color: #ff8e8c;
 }
 .sat {
     position: fixed;
     top: 500px;
     left: -205px;
-    background-color: rgb(228, 47, 228);
+    background-color: #86efac;
 
     padding-left: 25px;
 }
