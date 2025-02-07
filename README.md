@@ -6,6 +6,7 @@
 
 ## 点击链接，即可访问网页版：[单词之风](https://word-wind.pages.dev/)🧭
 ## 欢迎点点star⭐
+## 欢迎关注[作者](github.com/heygsc)
 
 本项目使用原生js构建，适配电脑端浏览器。
 
