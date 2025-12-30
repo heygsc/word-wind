@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="./doc/logo-big.png" width="500" />
-</div>
+<div align="center"><img src="./doc/logo-big.png" width="500" /><div>
 
 # Word Wind
 
