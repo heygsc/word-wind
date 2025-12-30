@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./doc/logo-big.png" width="500" />
+  <img src="./doc/logo-big.png" width="300" />
 </div>
 
 # Word Wind
