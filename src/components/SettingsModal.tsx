@@ -193,6 +193,7 @@ export const SettingsModal = ({
         <p>
           喜欢这个网站？
           <br />
+          <br />
           请到{' '}
           <a
             href="https://github.com/heygsc/word-wind"
@@ -203,6 +204,9 @@ export const SettingsModal = ({
             https://github.com/heygsc/word-wind
           </a>{' '}
           点亮 star 进行收藏！
+          <br />
+          <br />
+          欢迎将网站分享给身边的朋友！
         </p>
         <h2>设置</h2>
         <p>选择背景：</p>
