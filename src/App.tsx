@@ -146,16 +146,19 @@ const ArrowButton = styled.button<{ textColor: string }>`
   background: rgba(255, 255, 255, 0.2);
   color: ${props => props.textColor};
   font-size: 18px;
-  cursor: pointer;
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   display: flex;
   align-items: center;
   gap: 10px;
   backdrop-filter: blur(10px);
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.3);
   }
   &:focus {
     outline: none;
+  }
+  &:disabled {
+    opacity: 0.5;
   }
 `
 
@@ -370,12 +373,14 @@ function App() {
           <LeftArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => setCurrentIndex(prev => Math.max(1, prev - 1))}
+            disabled={isLoading}
           >
             ⬅️ 上一个
           </LeftArrowButton>
           <RightArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => setCurrentIndex(prev => (prev < totalWords ? prev + 1 : prev))}
+            disabled={isLoading}
           >
             下一个 ➡️
           </RightArrowButton>
