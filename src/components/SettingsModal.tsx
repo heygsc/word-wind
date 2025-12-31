@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { useState, useEffect } from 'react'
+import { supabase } from '../utils/supabase'
 
 const Modal = styled.div`
   position: fixed;
@@ -162,21 +163,24 @@ export const SettingsModal = ({
       return
     }
     try {
-      const response = await fetch('https://hisupabase.vercel.app/api/user-feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, content })
+      const { error } = await supabase.from('user-feedback').insert({
+        email,
+        content,
+        created_at: new Date()
       })
-      if (response.ok) {
-        alert('反馈提交成功')
-        setEmail('')
-        setContent('')
-        onClose()
-      } else {
+
+      if (error) {
+        console.error('Insert failed:', error)
         alert('提交失败')
+        return
       }
+
+      alert('反馈提交成功')
+      setEmail('')
+      setContent('')
+      onClose()
     } catch (error) {
-      console.error('Error submitting feedback:', error)
+      console.error('Unexpected error:', error)
       alert('网络错误')
     }
   }

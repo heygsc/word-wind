@@ -5,6 +5,7 @@ import { gradientShift, pulse } from './components/animations'
 import { WordCard } from './components/WordCard'
 import { SettingsModal } from './components/SettingsModal'
 import { UnknownWordsModal } from './components/UnknownWordsModal'
+import { supabase } from './utils/supabase'
 
 interface Translation {
   type: string
@@ -276,27 +277,48 @@ function App() {
   }
 
   useEffect(() => {
-    fetch(`https://hisupabase.vercel.app/api/total/${selectedLibrary}`)
-      .then(res => res.json())
-      .then(data => {
-        setTotalWords(data.total)
-      })
-      .catch(err => console.error('Failed to fetch total words:', err))
+    const fetchTotalWords = async () => {
+      const { count, error } = await supabase
+        .from(selectedLibrary)
+        .select('*', { count: 'exact', head: true })
+
+      if (error) {
+        console.error('Failed to fetch total words:', error)
+        return
+      }
+
+      setTotalWords(count as number)
+    }
+
+    fetchTotalWords()
   }, [selectedLibrary])
 
   useEffect(() => {
-    setIsLoading(true)
-    fetch(`https://hisupabase.vercel.app/api/${selectedLibrary}/${currentIndex}`)
-      .then(res => res.json())
-      .then(data => {
-        setWord(data.word)
-        setUs(data.us)
-        setUk(data.uk)
-        setTranslations(data.translations)
-        setPhrases(data.phrases)
-        setSentences(data.sentences)
+    const fetchWord = async () => {
+      setIsLoading(true)
+
+      const { data, error } = await supabase
+        .from(selectedLibrary)
+        .select('*')
+        .eq('id', currentIndex)
+        .single()
+
+      if (error) {
+        console.error(error)
         setIsLoading(false)
-      })
+        return
+      }
+
+      setWord(data.word)
+      setUs(data.us)
+      setUk(data.uk)
+      setTranslations(data.translations)
+      setPhrases(data.phrases)
+      setSentences(data.sentences)
+      setIsLoading(false)
+    }
+
+    fetchWord()
   }, [selectedLibrary, currentIndex])
 
   useEffect(() => {
