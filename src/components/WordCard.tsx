@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { fadeInUp, float } from './GlobalStyles'
+import { fadeInUp, float } from './animations'
 
 interface Translation {
   type: string

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { GlobalStyle, gradientShift, pulse } from './components/GlobalStyles'
+import { GlobalStyle } from './components/GlobalStyles'
+import { gradientShift, pulse } from './components/animations'
 import { WordCard } from './components/WordCard'
 import { SettingsModal } from './components/SettingsModal'
 import { UnknownWordsModal } from './components/UnknownWordsModal'
@@ -227,6 +228,10 @@ function App() {
   // 处理词库切换
   const handleLibraryChange = (value: string) => {
     setSelectedLibrary(value)
+
+    const index = getStoredIndex(value)
+    setCurrentIndex(index)
+
     localStorage.setItem('selectedLibrary', value)
   }
 
@@ -243,7 +248,10 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(() => getStoredIndex(selectedLibrary))
   const [totalWords, setTotalWords] = useState(0)
   const [unknownWords, setUnknownWords] = useState<{ word: string; translations: Translation[] }[]>(
-    []
+    () => {
+      const data = localStorage.getItem('unknownWords')
+      return data ? JSON.parse(data) : []
+    }
   )
   const [isLoading, setIsLoading] = useState(false)
 
@@ -277,15 +285,6 @@ function App() {
   }, [selectedLibrary])
 
   useEffect(() => {
-    setCurrentIndex(getStoredIndex(selectedLibrary))
-  }, [selectedLibrary])
-
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('unknownWords') || '[]')
-    setUnknownWords(data)
-  }, [])
-
-  useEffect(() => {
     setIsLoading(true)
     fetch(`https://hisupabase.vercel.app/api/${selectedLibrary}/${currentIndex}`)
       .then(res => res.json())
@@ -302,7 +301,7 @@ function App() {
 
   useEffect(() => {
     storeIndex(selectedLibrary, currentIndex)
-  }, [currentIndex])
+  }, [selectedLibrary, currentIndex])
 
   const playPhonetic = (type: 'us' | 'uk') => {
     if ('speechSynthesis' in window) {

@@ -176,6 +176,7 @@ export const SettingsModal = ({
         alert('提交失败')
       }
     } catch (error) {
+      console.error('Error submitting feedback:', error)
       alert('网络错误')
     }
   }
