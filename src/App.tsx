@@ -179,7 +179,18 @@ const LeftArrowButton = styled(ArrowButton)`
 // 右箭头按钮
 const RightArrowButton = styled(ArrowButton)`
   position: fixed;
-  bottom: 200px;
+  bottom: 250px;
+  right: 50px;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    position: static;
+  }
+`
+// 随机按钮
+const RandomArrowButton = styled(ArrowButton)`
+  position: fixed;
+  bottom: 150px;
   right: 50px;
   z-index: 10;
 
@@ -405,6 +416,13 @@ function App() {
           >
             下一个 ➡️
           </RightArrowButton>
+          <RandomArrowButton
+            textColor={bgIndex === 0 ? '#000' : '#fff'}
+            onClick={() => setCurrentIndex(()=> (Math.floor(Math.random() * totalWords) + 1))}
+            disabled={isLoading}
+          >
+            随机 🔀
+          </RandomArrowButton>
         </ArrowContainer>
         <ButtonContainer>
           <FixedSettingsButton
