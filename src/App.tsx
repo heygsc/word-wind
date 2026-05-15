@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { GlobalStyle } from './components/GlobalStyles'
 import { gradientShift, pulse } from './components/animations'
@@ -255,6 +255,8 @@ function App() {
     }
   )
   const [isLoading, setIsLoading] = useState(false)
+  const wordRequestLockedRef = useRef(false)
+  const wordRequestIdRef = useRef(0)
 
   const backgrounds = [
     'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
@@ -295,27 +297,38 @@ function App() {
 
   useEffect(() => {
     const fetchWord = async () => {
+      const requestId = wordRequestIdRef.current + 1
+      wordRequestIdRef.current = requestId
       setIsLoading(true)
 
-      const { data, error } = await supabase
-        .from(selectedLibrary)
-        .select('*')
-        .eq('id', currentIndex)
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from(selectedLibrary)
+          .select('*')
+          .eq('id', currentIndex)
+          .single()
 
-      if (error) {
-        console.error(error)
-        setIsLoading(false)
-        return
+        if (wordRequestIdRef.current !== requestId) {
+          return
+        }
+
+        if (error) {
+          console.error(error)
+          return
+        }
+
+        setWord(data.word)
+        setUs(data.us)
+        setUk(data.uk)
+        setTranslations(data.translations)
+        setPhrases(data.phrases)
+        setSentences(data.sentences)
+      } finally {
+        if (wordRequestIdRef.current === requestId) {
+          setIsLoading(false)
+          wordRequestLockedRef.current = false
+        }
       }
-
-      setWord(data.word)
-      setUs(data.us)
-      setUk(data.uk)
-      setTranslations(data.translations)
-      setPhrases(data.phrases)
-      setSentences(data.sentences)
-      setIsLoading(false)
     }
 
     fetchWord()
@@ -352,6 +365,54 @@ function App() {
     localStorage.setItem('unknownWords', JSON.stringify(existing))
     setUnknownWords(existing)
   }
+
+  const changeWord = useCallback(
+    (step: -1 | 1) => {
+      if (isLoading || wordRequestLockedRef.current) {
+        return
+      }
+
+      const nextIndex =
+        step === -1 ? Math.max(1, currentIndex - 1) : Math.min(totalWords, currentIndex + 1)
+
+      if (nextIndex === currentIndex) {
+        return
+      }
+
+      wordRequestLockedRef.current = true
+      setCurrentIndex(nextIndex)
+    },
+    [currentIndex, isLoading, totalWords]
+  )
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      const tagName = target?.tagName
+      const isEditable =
+        target?.isContentEditable ||
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT'
+
+      if (isEditable) {
+        return
+      }
+
+      if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+        event.preventDefault()
+        changeWord(-1)
+      }
+
+      if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+        event.preventDefault()
+        changeWord(1)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [changeWord])
 
   return (
     <>
@@ -393,14 +454,14 @@ function App() {
         <ArrowContainer>
           <LeftArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
-            onClick={() => setCurrentIndex(prev => Math.max(1, prev - 1))}
+            onClick={() => changeWord(-1)}
             disabled={isLoading}
           >
             ⬅️ 上一个
           </LeftArrowButton>
           <RightArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
-            onClick={() => setCurrentIndex(prev => (prev < totalWords ? prev + 1 : prev))}
+            onClick={() => changeWord(1)}
             disabled={isLoading}
           >
             下一个 ➡️
