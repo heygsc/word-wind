@@ -19,10 +19,11 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   color: white;
   backdrop-filter: blur(10px);
   border-radius: 24px;
-  padding: 40px;
+  box-sizing: border-box;
+  padding: 32px 40px;
   max-width: 500px;
   width: 90%;
-  max-height: 90vh;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   opacity: 0;
@@ -37,6 +38,11 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
     opacity: 1;
     transform: scale(1);
   `}
+
+  @media (max-width: 768px) {
+    padding: 28px 24px;
+    max-height: calc(100vh - 24px);
+  }
 `
 
 const Button = styled.button<{ i?: number }>`
@@ -197,6 +203,17 @@ export const SettingsModal = ({
         <CloseButton onClick={onClose}>×</CloseButton>
         <p>
           喜欢这个网站？
+          <br />
+          <br />
+          欢迎关注作者：
+          <a
+            href="https://github.com/heygsc"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'orange' }}
+          >
+            https://github.com/heygsc
+          </a>
           <br />
           <br />
           请到{' '}
