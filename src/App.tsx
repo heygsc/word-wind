@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { GlobalStyle } from './components/GlobalStyles'
 import { gradientShift, pulse } from './components/animations'
@@ -105,6 +105,55 @@ const DisplayBox = styled.div<{ textColor: string }>`
   font-size: 16px;
   margin-top: 10px;
   white-space: pre-line;
+`
+
+const PageSelectorForm = styled.form`
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+`
+
+const PageInput = styled.input<{ textColor: string }>`
+  min-width: 0;
+  width: 92px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: ${props => props.textColor};
+  font-size: 16px;
+
+  &:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &::placeholder {
+    color: currentColor;
+    opacity: 0.7;
+  }
+`
+
+const PageJumpButton = styled.button<{ textColor: string }>`
+  padding: 10px 12px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  color: ${props => props.textColor};
+  font-size: 16px;
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
 `
 
 // 固定设置按钮
@@ -232,6 +281,7 @@ function App() {
 
     const index = getStoredIndex(value)
     setCurrentIndex(index)
+    setPageInput(index.toString())
 
     localStorage.setItem('selectedLibrary', value)
   }
@@ -247,6 +297,7 @@ function App() {
   const [showUnknown, setShowUnknown] = useState(false)
   const [selectedLibrary, setSelectedLibrary] = useState(getStoredLibrary)
   const [currentIndex, setCurrentIndex] = useState(() => getStoredIndex(selectedLibrary))
+  const [pageInput, setPageInput] = useState(() => getStoredIndex(selectedLibrary).toString())
   const [totalWords, setTotalWords] = useState(0)
   const [unknownWords, setUnknownWords] = useState<{ word: string; translations: Translation[] }[]>(
     () => {
@@ -257,6 +308,11 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const wordRequestLockedRef = useRef(false)
   const wordRequestIdRef = useRef(0)
+
+  const clampIndex = useCallback(
+    (index: number) => Math.min(Math.max(index, 1), Math.max(totalWords, 1)),
+    [totalWords]
+  )
 
   const backgrounds = [
     'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
@@ -338,6 +394,10 @@ function App() {
     storeIndex(selectedLibrary, currentIndex)
   }, [selectedLibrary, currentIndex])
 
+  useEffect(() => {
+    setPageInput(currentIndex.toString())
+  }, [currentIndex])
+
   const playPhonetic = (type: 'us' | 'uk') => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(word)
@@ -372,8 +432,7 @@ function App() {
         return
       }
 
-      const nextIndex =
-        step === -1 ? Math.max(1, currentIndex - 1) : Math.min(totalWords, currentIndex + 1)
+      const nextIndex = clampIndex(currentIndex + step)
 
       if (nextIndex === currentIndex) {
         return
@@ -382,8 +441,32 @@ function App() {
       wordRequestLockedRef.current = true
       setCurrentIndex(nextIndex)
     },
-    [currentIndex, isLoading, totalWords]
+    [clampIndex, currentIndex, isLoading]
   )
+
+  const handlePageSelect = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (isLoading || wordRequestLockedRef.current || totalWords === 0) {
+      return
+    }
+
+    const requestedIndex = Number.parseInt(pageInput, 10)
+    if (Number.isNaN(requestedIndex)) {
+      setPageInput(currentIndex.toString())
+      return
+    }
+
+    const nextIndex = clampIndex(requestedIndex)
+    setPageInput(nextIndex.toString())
+
+    if (nextIndex === currentIndex) {
+      return
+    }
+
+    wordRequestLockedRef.current = true
+    setCurrentIndex(nextIndex)
+  }
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -435,6 +518,26 @@ function App() {
           <DisplayBox textColor={bgIndex === 0 ? '#000' : '#fff'}>
             {`当前是${libraryNames[selectedLibrary]}词库\n第${currentIndex}个，共${totalWords}个`}
           </DisplayBox>
+          <PageSelectorForm onSubmit={handlePageSelect}>
+            <PageInput
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              type="number"
+              min={1}
+              max={totalWords || undefined}
+              inputMode="numeric"
+              value={pageInput}
+              placeholder="页码"
+              onChange={event => setPageInput(event.target.value)}
+              aria-label="选择页码"
+            />
+            <PageJumpButton
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              type="submit"
+              disabled={isLoading || totalWords === 0}
+            >
+              跳转
+            </PageJumpButton>
+          </PageSelectorForm>
         </Sidebar>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <WordCard
@@ -455,14 +558,14 @@ function App() {
           <LeftArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => changeWord(-1)}
-            disabled={isLoading}
+            disabled={isLoading || currentIndex <= 1}
           >
             ⬅️ 上一个
           </LeftArrowButton>
           <RightArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => changeWord(1)}
-            disabled={isLoading}
+            disabled={isLoading || currentIndex >= totalWords}
           >
             下一个 ➡️
           </RightArrowButton>
