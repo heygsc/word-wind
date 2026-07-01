@@ -169,6 +169,7 @@ interface WordCardProps {
   sentences: Sentence[]
   bgIndex: number
   isLoading: boolean
+  showContent: boolean
   onSettingsClick: () => void
   onPlayPhonetic: (type: 'us' | 'uk') => void
   onDontKnow: (word: string, translations: Translation[]) => boolean
@@ -183,6 +184,7 @@ export const WordCard = ({
   sentences,
   bgIndex,
   isLoading,
+  showContent,
   onPlayPhonetic,
   onDontKnow
 }: WordCardProps) => {
@@ -246,40 +248,44 @@ export const WordCard = ({
         <PlayButton onClick={() => onPlayPhonetic('us')}>🇺🇸 🔊 {us}</PlayButton>
         <PlayButton onClick={() => onPlayPhonetic('uk')}>🇬🇧 🔊 {uk}</PlayButton>
       </div>
-      <Text>
-        <strong>翻译：</strong>
-      </Text>
-      <List>
-        {translations.map((t, i) => (
-          <ListItem key={i}>
-            <strong>{t.type}:</strong> {t.translation}
-          </ListItem>
-        ))}
-      </List>
-      <Text>
-        <strong>句子：</strong>
-      </Text>
-      <List>
-        {sentences.map((s, i) => (
-          <ListItem key={i}>
-            <strong>{s.sentence}</strong>
-            <br />
-            {s.translation}
-          </ListItem>
-        ))}
-      </List>
-      {phrases.length > 0 && (
+      {showContent && (
         <>
           <Text>
-            <strong>短语：</strong>
+            <strong>翻译：</strong>
           </Text>
           <List>
-            {phrases.map((p, i) => (
+            {translations.map((t, i) => (
               <ListItem key={i}>
-                <strong>{p.phrase}:</strong> {p.translation}
+                <strong>{t.type}:</strong> {t.translation}
               </ListItem>
             ))}
           </List>
+          <Text>
+            <strong>句子：</strong>
+          </Text>
+          <List>
+            {sentences.map((s, i) => (
+              <ListItem key={i}>
+                <strong>{s.sentence}</strong>
+                <br />
+                {s.translation}
+              </ListItem>
+            ))}
+          </List>
+          {phrases.length > 0 && (
+            <>
+              <Text>
+                <strong>短语：</strong>
+              </Text>
+              <List>
+                {phrases.map((p, i) => (
+                  <ListItem key={i}>
+                    <strong>{p.phrase}:</strong> {p.translation}
+                  </ListItem>
+                ))}
+              </List>
+            </>
+          )}
         </>
       )}
       <div style={{ textAlign: 'center', marginTop: '20px' }}>

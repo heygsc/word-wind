@@ -156,6 +156,11 @@ const PageJumpButton = styled.button<{ textColor: string }>`
   }
 `
 
+const ContentToggleButton = styled(PageJumpButton)`
+  width: 100%;
+  margin-top: 10px;
+`
+
 // 固定设置按钮
 const FixedSettingsButton = styled.button<{ textColor: string }>`
   position: fixed;
@@ -258,6 +263,7 @@ const ButtonContainer = styled.div`
 `
 
 const BACKGROUND_STORAGE_KEY = 'selectedBackground'
+const CONTENT_VISIBILITY_STORAGE_KEY = 'wordCardContentVisible'
 
 const backgrounds = [
   'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
@@ -294,6 +300,11 @@ function App() {
     return Number.isInteger(index) && index >= 0 && index < backgrounds.length ? index : 0
   }
 
+  // 从localStorage获取内容显示设置
+  const getStoredContentVisible = () => {
+    return localStorage.getItem(CONTENT_VISIBILITY_STORAGE_KEY) !== 'false'
+  }
+
   // 处理背景切换
   const handleBackgroundChange = (index: number) => {
     setBgIndex(index)
@@ -320,6 +331,7 @@ function App() {
   const [bgIndex, setBgIndex] = useState(getStoredBackgroundIndex)
   const [showSettings, setShowSettings] = useState(false)
   const [showUnknown, setShowUnknown] = useState(false)
+  const [showCardContent, setShowCardContent] = useState(getStoredContentVisible)
   const [selectedLibrary, setSelectedLibrary] = useState(getStoredLibrary)
   const [currentIndex, setCurrentIndex] = useState(() => getStoredIndex(selectedLibrary))
   const [pageInput, setPageInput] = useState(() => getStoredIndex(selectedLibrary).toString())
@@ -412,6 +424,14 @@ function App() {
   useEffect(() => {
     setPageInput(currentIndex.toString())
   }, [currentIndex])
+
+  const handleContentVisibilityToggle = () => {
+    setShowCardContent(current => {
+      const next = !current
+      localStorage.setItem(CONTENT_VISIBILITY_STORAGE_KEY, String(next))
+      return next
+    })
+  }
 
   const playPhonetic = (type: 'us' | 'uk') => {
     if ('speechSynthesis' in window) {
@@ -558,6 +578,13 @@ function App() {
               跳转
             </PageJumpButton>
           </PageSelectorForm>
+          <ContentToggleButton
+            textColor={bgIndex === 0 ? '#000' : '#fff'}
+            type="button"
+            onClick={handleContentVisibilityToggle}
+          >
+            {showCardContent ? '隐藏释义' : '显示释义'}
+          </ContentToggleButton>
         </Sidebar>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           <WordCard
@@ -569,6 +596,7 @@ function App() {
             sentences={sentences}
             bgIndex={bgIndex}
             isLoading={isLoading}
+            showContent={showCardContent}
             onSettingsClick={() => setShowSettings(true)}
             onPlayPhonetic={playPhonetic}
             onDontKnow={handleDontKnow}
