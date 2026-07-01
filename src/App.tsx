@@ -257,6 +257,18 @@ const ButtonContainer = styled.div`
   }
 `
 
+const BACKGROUND_STORAGE_KEY = 'selectedBackground'
+
+const backgrounds = [
+  'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
+  'linear-gradient(-45deg, #f39c12, #e67e22, #e74c3c, #c0392b, #f39c12)',
+  'linear-gradient(-45deg, #1abc9c, #16a085, #2ecc71, #27ae60, #1abc9c)',
+  'linear-gradient(-45deg, #2196f3, #21cbf3, #2196f3)',
+  'linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e, #533483)'
+]
+
+const themeColors = ['#f5f5dc', '#f39c12', '#1abc9c', '#2196f3', '#1a1a2e']
+
 function App() {
   // 从localStorage获取词库位置
   const getStoredIndex = (library: string) => {
@@ -273,6 +285,19 @@ function App() {
   const getStoredLibrary = () => {
     const stored = localStorage.getItem('selectedLibrary')
     return stored || 'cet4'
+  }
+
+  // 从localStorage获取背景设置
+  const getStoredBackgroundIndex = () => {
+    const stored = localStorage.getItem(BACKGROUND_STORAGE_KEY)
+    const index = stored ? Number.parseInt(stored, 10) : 0
+    return Number.isInteger(index) && index >= 0 && index < backgrounds.length ? index : 0
+  }
+
+  // 处理背景切换
+  const handleBackgroundChange = (index: number) => {
+    setBgIndex(index)
+    localStorage.setItem(BACKGROUND_STORAGE_KEY, index.toString())
   }
 
   // 处理词库切换
@@ -292,7 +317,7 @@ function App() {
   const [translations, setTranslations] = useState<Translation[]>([])
   const [phrases, setPhrases] = useState<Phrase[]>([])
   const [sentences, setSentences] = useState<Sentence[]>([])
-  const [bgIndex, setBgIndex] = useState(0)
+  const [bgIndex, setBgIndex] = useState(getStoredBackgroundIndex)
   const [showSettings, setShowSettings] = useState(false)
   const [showUnknown, setShowUnknown] = useState(false)
   const [selectedLibrary, setSelectedLibrary] = useState(getStoredLibrary)
@@ -313,16 +338,6 @@ function App() {
     (index: number) => Math.min(Math.max(index, 1), Math.max(totalWords, 1)),
     [totalWords]
   )
-
-  const backgrounds = [
-    'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
-    'linear-gradient(-45deg, #f39c12, #e67e22, #e74c3c, #c0392b, #f39c12)',
-    'linear-gradient(-45deg, #1abc9c, #16a085, #2ecc71, #27ae60, #1abc9c)',
-    'linear-gradient(-45deg, #2196f3, #21cbf3, #2196f3)',
-    'linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e, #533483)'
-  ]
-
-  const themeColors = ['#f5f5dc', '#f39c12', '#1abc9c', '#2196f3', '#1a1a2e']
 
   const libraryNames: { [key: string]: string } = {
     chuzhong: '初中',
@@ -594,7 +609,7 @@ function App() {
           onClose={() => setShowSettings(false)}
           backgrounds={backgrounds}
           themeColors={themeColors}
-          onSelectBackground={index => setBgIndex(index)}
+          onSelectBackground={handleBackgroundChange}
         />
         <UnknownWordsModal
           show={showUnknown}
