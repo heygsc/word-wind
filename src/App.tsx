@@ -414,9 +414,14 @@ function App() {
 
   const handleDontKnow = (word: string, translations: Translation[]) => {
     const existing = JSON.parse(localStorage.getItem('unknownWords') || '[]')
+    if (existing.some((item: { word: string }) => item.word === word)) {
+      return false
+    }
+
     existing.push({ word, translations })
     localStorage.setItem('unknownWords', JSON.stringify(existing))
     setUnknownWords(existing)
+    return true
   }
 
   const handleRemoveUnknown = (index: number) => {

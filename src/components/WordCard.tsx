@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { fadeInUp, float } from './animations'
 
@@ -150,6 +151,15 @@ const PlayButton = styled(Button)`
   }
 `
 
+const FeedbackText = styled.div<{ type: 'success' | 'info' }>`
+  min-height: 24px;
+  margin-top: 2px;
+  color: ${props => (props.type === 'success' ? '#bbf7d0' : '#fde68a')};
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+`
+
 interface WordCardProps {
   word: string
   us: string
@@ -161,7 +171,7 @@ interface WordCardProps {
   isLoading: boolean
   onSettingsClick: () => void
   onPlayPhonetic: (type: 'us' | 'uk') => void
-  onDontKnow: (word: string, translations: Translation[]) => void
+  onDontKnow: (word: string, translations: Translation[]) => boolean
 }
 
 export const WordCard = ({
@@ -176,8 +186,37 @@ export const WordCard = ({
   onPlayPhonetic,
   onDontKnow
 }: WordCardProps) => {
+  const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'info' } | null>(
+    null
+  )
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    setFeedback(null)
+  }, [word])
+
   const handleDontKnow = () => {
-    onDontKnow(word, translations)
+    const added = onDontKnow(word, translations)
+
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current)
+    }
+
+    setFeedback({
+      message: added ? '已加入不会的单词' : '这个单词已标记过',
+      type: added ? 'success' : 'info'
+    })
+    feedbackTimerRef.current = setTimeout(() => {
+      setFeedback(null)
+    }, 1800)
   }
 
   if (isLoading) {
@@ -245,6 +284,9 @@ export const WordCard = ({
       )}
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <Button onClick={handleDontKnow}>不会</Button>
+        <FeedbackText type={feedback?.type ?? 'success'} aria-live="polite">
+          {feedback?.message}
+        </FeedbackText>
       </div>
     </Card>
   )
