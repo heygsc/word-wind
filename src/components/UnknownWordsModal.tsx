@@ -13,6 +13,91 @@ interface UnknownWordsModalProps {
   onRemove: (index: number) => void
 }
 
+const buildWordDocument = (
+  unknownWords: UnknownWordsModalProps['unknownWords'],
+  docx: typeof import('docx')
+) => {
+  const {
+    AlignmentType,
+    Document,
+    HeadingLevel,
+    Paragraph,
+    Table,
+    TableCell,
+    TableRow,
+    TextRun,
+    WidthType
+  } = docx
+
+  const headerCells = ['序号', '单词', '释义'].map(
+    text =>
+      new TableCell({
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text, bold: true })],
+            alignment: AlignmentType.CENTER
+          })
+        ]
+      })
+  )
+
+  const rows = unknownWords.map(
+    (item, index) =>
+      new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph(String(index + 1))]
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: item.word, bold: true })]
+              })
+            ]
+          }),
+          new TableCell({
+            children: item.translations.map(
+              t =>
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: `${t.type}: `, bold: true }),
+                    new TextRun(t.translation)
+                  ]
+                })
+            )
+          })
+        ]
+      })
+  )
+
+  return new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({
+            text: '不会的单词',
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER
+          }),
+          new Table({
+            width: {
+              size: 100,
+              type: WidthType.PERCENTAGE
+            },
+            rows: [
+              new TableRow({
+                children: headerCells,
+                tableHeader: true
+              }),
+              ...rows
+            ]
+          })
+        ]
+      }
+    ]
+  })
+}
+
 // 模态框容器
 const ModalOverlay = styled.div`
   position: fixed;
@@ -112,6 +197,28 @@ const DeleteButton = styled.button`
   }
 `
 
+const ExportButton = styled.button`
+  display: block;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 16px;
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+  transition: background-color 0.3s;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+`
+
 export const UnknownWordsModal = ({
   show,
   onClose,
@@ -120,6 +227,7 @@ export const UnknownWordsModal = ({
 }: UnknownWordsModalProps) => {
   const [isVisible, setIsVisible] = useState(show)
   const [isOpen, setIsOpen] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   useEffect(() => {
     if (show) {
@@ -133,6 +241,29 @@ export const UnknownWordsModal = ({
   const handleTransitionEnd = () => {
     if (!isOpen) {
       setIsVisible(false)
+    }
+  }
+
+  const handleExportWord = async () => {
+    if (unknownWords.length === 0 || isExporting) return
+
+    setIsExporting(true)
+
+    try {
+      const docx = await import('docx')
+      const documentContent = buildWordDocument(unknownWords, docx)
+      const blob = await docx.Packer.toBlob(documentContent)
+      const link = document.createElement('a')
+      const date = new Date().toISOString().slice(0, 10)
+
+      link.href = URL.createObjectURL(blob)
+      link.download = `不会的单词-${date}.docx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -150,6 +281,13 @@ export const UnknownWordsModal = ({
         <p style={{ color: 'white', textAlign: 'center', marginBottom: '20px' }}>
           点击单词面板底部的"不会"按钮，即可标记
         </p>
+        <ExportButton
+          type="button"
+          onClick={handleExportWord}
+          disabled={unknownWords.length === 0 || isExporting}
+        >
+          {isExporting ? '导出中...' : '导出 Word'}
+        </ExportButton>
         {unknownWords.length === 0 ? (
           <p style={{ color: 'white', textAlign: 'center' }}>暂无不会的单词</p>
         ) : (
