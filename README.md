@@ -35,15 +35,3 @@
 单词库来源：[https://github.com/KyleBing/english-vocabular](https://github.com/KyleBing/english-vocabulary)
 
 本项目仅供学习用途。
-
-<hr/>
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=heygsc%2Fword-wind&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=heygsc/word-wind&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=heygsc/word-wind&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=heygsc/word-wind&type=date&legend=top-left" />
- </picture>
-</a>
