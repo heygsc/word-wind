@@ -369,7 +369,35 @@ const WordContainer = styled.main`
   grid-area: content;
   min-width: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+`
+
+const ModeSwitch = styled.div`
+  display: flex;
+  align-self: center;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  button {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 `
 
 const BACKGROUND_STORAGE_KEY = 'selectedBackground'
@@ -449,6 +477,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showUnknown, setShowUnknown] = useState(false)
   const [showCardContent, setShowCardContent] = useState(getStoredContentVisible)
+  const [isSpelling, setIsSpelling] = useState(false)
   const [selectedLibrary, setSelectedLibrary] = useState(getStoredLibrary)
   const [currentIndex, setCurrentIndex] = useState(
     () => getRequestedLocation()?.index ?? getStoredIndex(selectedLibrary)
@@ -593,7 +622,7 @@ function App() {
 
   const { playPhonetic, playText, speechMessage } = usePronunciation(
     word,
-    `${selectedLibrary}:${currentIndex}`
+    `${selectedLibrary}:${currentIndex}:${isSpelling}`
   )
 
   const handleDontKnow = (word: string, translations: Translation[]) => {
@@ -830,16 +859,28 @@ function App() {
               跳转
             </PageJumpButton>
           </PageSelectorForm>
-          <ContentToggleButton
-            textColor={bgIndex === 0 ? '#000' : '#fff'}
-            type="button"
-            onClick={handleContentVisibilityToggle}
-          >
-            {showCardContent ? '隐藏释义' : '显示释义'}
-          </ContentToggleButton>
+          {!isSpelling && (
+            <ContentToggleButton
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              type="button"
+              onClick={handleContentVisibilityToggle}
+            >
+              {showCardContent ? '隐藏释义' : '显示释义'}
+            </ContentToggleButton>
+          )}
         </Sidebar>
         <WordContainer>
+          <ModeSwitch role="group" aria-label="学习模式">
+            <button type="button" aria-pressed={!isSpelling} onClick={() => setIsSpelling(false)}>
+              看词学习
+            </button>
+            <button type="button" aria-pressed={isSpelling} onClick={() => setIsSpelling(true)}>
+              看中文拼写
+            </button>
+          </ModeSwitch>
           <WordCard
+            key={`${selectedLibrary}:${currentIndex}:${word}:${isSpelling}`}
+            isSpelling={isSpelling}
             word={word}
             us={us}
             uk={uk}

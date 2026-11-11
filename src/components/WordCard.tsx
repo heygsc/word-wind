@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { fadeInUp } from './animations'
 
@@ -181,6 +181,60 @@ const SpeechMessage = styled.div`
   }
 `
 
+const Practice = styled.section`
+  margin-bottom: 24px;
+  h1 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  label {
+    display: block;
+    margin: 24px 0 10px;
+    font-size: 14px;
+  }
+`
+
+const AnswerInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 18px;
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+`
+
+const PracticeActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  button {
+    margin: 0;
+    padding: 10px 14px;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+`
+
 interface WordCardProps {
   word: string
   us: string
@@ -191,6 +245,7 @@ interface WordCardProps {
   bgIndex: number
   isLoading: boolean
   showContent: boolean
+  isSpelling: boolean
   onSettingsClick: () => void
   onPlayPhonetic: (type: 'us' | 'uk') => void
   onPlayText: (text: string, accent: 'us' | 'uk') => void
@@ -208,11 +263,30 @@ export const WordCard = ({
   bgIndex,
   isLoading,
   showContent,
+  isSpelling,
   onPlayPhonetic,
   onPlayText,
   speechMessage,
   onDontKnow
 }: WordCardProps) => {
+  const [answer, setAnswer] = useState('')
+  const [result, setResult] = useState<'match' | 'different' | 'revealed' | null>(null)
+  const [showHint, setShowHint] = useState(false)
+  const answerRef = useRef<HTMLInputElement>(null)
+  const answerVisible = !isSpelling || result !== null
+  const detailsVisible = isSpelling ? answerVisible : showContent
+
+  useEffect(() => {
+    if (isSpelling && !isLoading) answerRef.current?.focus()
+  }, [isSpelling, isLoading])
+
+  const checkAnswer = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!answer.trim() || !word.trim() || result) return
+    const normalize = (value: string) => value.trim().replace(/\s+/g, ' ').toLowerCase()
+    setResult(normalize(answer) === normalize(word) ? 'match' : 'different')
+  }
+
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'info' } | null>(
     null
   )
@@ -260,52 +334,121 @@ export const WordCard = ({
 
   return (
     <Card>
-      <Title>{word}</Title>
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '20px'
-        }}
-      >
-        <PlayButton
-          aria-label="播放英式发音"
-          title="播放英式发音"
-          onClick={() => onPlayPhonetic('uk')}
-        >
-          🇬🇧 🔊 {uk}
-        </PlayButton>
-        <PlayButton
-          aria-label="播放美式发音"
-          title="播放美式发音"
-          onClick={() => onPlayPhonetic('us')}
-        >
-          🇺🇸 🔊 {us}
-        </PlayButton>
-      </div>
-      <SpeechMessage role="status" aria-live="polite" aria-atomic="true">
-        {speechMessage}
-      </SpeechMessage>
+      {isSpelling && (
+        <Practice aria-labelledby="spelling-heading">
+          <h1 id="spelling-heading">看中文，回忆英文</h1>
+          <List>
+            {translations.map((t, i) => (
+              <ListItem key={i}>
+                {t.type && <strong>{t.type}: </strong>}
+                {t.translation}
+              </ListItem>
+            ))}
+          </List>
+          {translations.length === 0 && <p>这个词条暂无中文释义，可以查看答案或跳过。</p>}
+          <p id="spelling-help">按当前词条核对拼写；中文可能对应多个英文词。</p>
+          <form onSubmit={checkAnswer}>
+            <label htmlFor="spelling-answer">你的英文答案</label>
+            <AnswerInput
+              ref={answerRef}
+              id="spelling-answer"
+              value={answer}
+              onChange={event => setAnswer(event.target.value)}
+              onKeyDown={event => {
+                if (event.key === 'Enter' && event.nativeEvent.isComposing) event.preventDefault()
+              }}
+              placeholder="输入英文，按 Enter 检查"
+              aria-describedby="spelling-help spelling-result"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              readOnly={answerVisible}
+            />
+            {!answerVisible && (
+              <PracticeActions>
+                <Button type="submit" disabled={!answer.trim() || !word.trim()}>
+                  检查拼写
+                </Button>
+                <PlayButton
+                  type="button"
+                  onClick={() => {
+                    setShowHint(true)
+                    answerRef.current?.focus()
+                  }}
+                  disabled={showHint || !word.trim()}
+                >
+                  首字母提示
+                </PlayButton>
+                <PlayButton type="button" onClick={() => setResult('revealed')}>
+                  看答案
+                </PlayButton>
+              </PracticeActions>
+            )}
+          </form>
+          {showHint && !answerVisible && <p role="status">首字母：{word.trim().charAt(0)}</p>}
+          <p id="spelling-result" role="status" aria-live="polite">
+            {result === 'match' && '拼写正确！可以继续下一个。'}
+            {result === 'different' &&
+              `与当前词条不一致，本词条答案是 ${word}。可以对照记忆后继续。`}
+            {result === 'revealed' && `本词条答案是 ${word}。可以标记“不会”，或直接继续下一个。`}
+          </p>
+        </Practice>
+      )}
+      {answerVisible && (
+        <>
+          <Title>{word}</Title>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginBottom: '20px'
+            }}
+          >
+            <PlayButton
+              aria-label="播放英式发音"
+              title="播放英式发音"
+              onClick={() => onPlayPhonetic('uk')}
+            >
+              🇬🇧 🔊 {uk}
+            </PlayButton>
+            <PlayButton
+              aria-label="播放美式发音"
+              title="播放美式发音"
+              onClick={() => onPlayPhonetic('us')}
+            >
+              🇺🇸 🔊 {us}
+            </PlayButton>
+          </div>
+          <SpeechMessage role="status" aria-live="polite" aria-atomic="true">
+            {speechMessage}
+          </SpeechMessage>
+        </>
+      )}
       <div style={{ textAlign: 'center' }}>
         <Button onClick={handleDontKnow}>不会</Button>
         <FeedbackText type={feedback?.type ?? 'success'} aria-live="polite">
           {feedback?.message}
         </FeedbackText>
       </div>
-      {showContent && (
+      {detailsVisible && (
         <>
-          <Text>
-            <strong>释义 / MEANING</strong>
-          </Text>
-          <List>
-            {translations.map((t, i) => (
-              <ListItem key={i}>
-                <strong>{t.type}:</strong> {t.translation}
-              </ListItem>
-            ))}
-          </List>
+          {!isSpelling && (
+            <>
+              <Text>
+                <strong>释义 / MEANING</strong>
+              </Text>
+              <List>
+                {translations.map((t, i) => (
+                  <ListItem key={i}>
+                    <strong>{t.type}:</strong> {t.translation}
+                  </ListItem>
+                ))}
+              </List>
+            </>
+          )}
           <Text>
             <strong>例句 / IN CONTEXT</strong>
           </Text>
