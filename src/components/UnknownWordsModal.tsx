@@ -200,7 +200,6 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.3s;
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
@@ -248,7 +247,6 @@ const ExportButton = styled.button`
   color: var(--ink);
   font-size: 16px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
-  transition: background-color 0.3s;
 
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.3);

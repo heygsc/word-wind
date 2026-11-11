@@ -85,9 +85,6 @@ const Button = styled.button`
   border-radius: 10px;
   cursor: pointer;
   margin: 8px;
-  transition:
-    background 0.2s,
-    transform 0.2s;
   &:hover {
     filter: brightness(1.1);
     transform: translateY(-1px);

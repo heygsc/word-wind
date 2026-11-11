@@ -129,8 +129,30 @@ const Sidebar = styled.div`
 `
 
 // 下拉框样式
+const SelectWrapper = styled.div`
+  position: relative;
+  min-width: 0;
+  color: var(--ink);
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: calc(50% - 5px);
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    pointer-events: none;
+    transition: color 180ms ease;
+  }
+`
+
 const Select = styled.select<{ textColor: string }>`
-  padding: 10px;
+  appearance: none;
+  width: 100%;
+  padding: 10px 40px 10px 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--soft);
@@ -769,20 +791,22 @@ function App() {
         )}
         <Sidebar>
           <PanelLabel htmlFor="word-library">学习词库</PanelLabel>
-          <Select
-            id="word-library"
-            textColor={bgIndex === 0 ? '#000' : '#fff'}
-            value={selectedLibrary}
-            onChange={e => handleLibraryChange(e.target.value)}
-          >
-            <option value="chuzhong">初中</option>
-            <option value="gaozhong">高中</option>
-            <option value="cet4">CET4</option>
-            <option value="cet6">CET6</option>
-            <option value="kaoyan">考研</option>
-            <option value="toefl">托福</option>
-            <option value="sat">SAT</option>
-          </Select>
+          <SelectWrapper>
+            <Select
+              id="word-library"
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              value={selectedLibrary}
+              onChange={e => handleLibraryChange(e.target.value)}
+            >
+              <option value="chuzhong">初中</option>
+              <option value="gaozhong">高中</option>
+              <option value="cet4">CET4</option>
+              <option value="cet6">CET6</option>
+              <option value="kaoyan">考研</option>
+              <option value="toefl">托福</option>
+              <option value="sat">SAT</option>
+            </Select>
+          </SelectWrapper>
           <DisplayBox textColor={bgIndex === 0 ? '#000' : '#fff'}>
             {`当前是${libraryNames[selectedLibrary]}词库\n第${currentIndex}个，共${totalWords}个`}
           </DisplayBox>

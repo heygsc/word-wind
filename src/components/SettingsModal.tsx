@@ -65,9 +65,11 @@ const Button = styled.button`
 `
 
 const ThemeButton = styled(Button)`
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+
   &[aria-pressed='true'] {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+    outline-color: var(--accent);
   }
 `
 
@@ -87,7 +89,6 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.3s;
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }

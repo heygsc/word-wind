@@ -15,6 +15,17 @@ export const GlobalStyle = createGlobalStyle`
   }
   button, input, select { font-family: inherit; }
   button, input, select, a { -webkit-tap-highlight-color: transparent; }
+  button, input, select, a {
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      outline-color 180ms ease,
+      text-decoration-color 180ms ease,
+      filter 180ms ease,
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
   button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
     outline: 2px solid var(--accent, #385c46);
     outline-offset: 3px;
