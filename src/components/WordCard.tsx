@@ -113,6 +113,16 @@ const FeedbackText = styled.div<{ type: 'success' | 'info' }>`
   font-size: 12px;
 `
 
+const SpeechMessage = styled.div`
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  &:not(:empty) {
+    margin: -8px 0 16px;
+  }
+`
+
 interface WordCardProps {
   word: string
   us: string
@@ -125,6 +135,7 @@ interface WordCardProps {
   showContent: boolean
   onSettingsClick: () => void
   onPlayPhonetic: (type: 'us' | 'uk') => void
+  speechMessage: string
   onDontKnow: (word: string, translations: Translation[]) => boolean
 }
 
@@ -139,6 +150,7 @@ export const WordCard = ({
   isLoading,
   showContent,
   onPlayPhonetic,
+  speechMessage,
   onDontKnow
 }: WordCardProps) => {
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'info' } | null>(
@@ -213,6 +225,9 @@ export const WordCard = ({
           🇬🇧 🔊 {uk}
         </PlayButton>
       </div>
+      <SpeechMessage role="status" aria-live="polite" aria-atomic="true">
+        {speechMessage}
+      </SpeechMessage>
       <div style={{ textAlign: 'center' }}>
         <Button onClick={handleDontKnow}>不会</Button>
         <FeedbackText type={feedback?.type ?? 'success'} aria-live="polite">

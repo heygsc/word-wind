@@ -6,6 +6,7 @@ import { SettingsModal } from './components/SettingsModal'
 import { UnknownWordsModal } from './components/UnknownWordsModal'
 import { supabase } from './utils/supabase'
 import { themes } from './themes'
+import { usePronunciation } from './hooks/usePronunciation'
 
 interface Translation {
   type: string
@@ -568,19 +569,10 @@ function App() {
     })
   }
 
-  const playPhonetic = (type: 'us' | 'uk') => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(word)
-      const voices = speechSynthesis.getVoices()
-      const voice = voices.find(v => v.lang === (type === 'us' ? 'en-US' : 'en-GB'))
-      if (voice) {
-        utterance.voice = voice
-      }
-      speechSynthesis.speak(utterance)
-    } else {
-      alert('Speech synthesis not supported in this browser.')
-    }
-  }
+  const { playPhonetic, speechMessage } = usePronunciation(
+    word,
+    `${selectedLibrary}:${currentIndex}`
+  )
 
   const handleDontKnow = (word: string, translations: Translation[]) => {
     const existing = JSON.parse(localStorage.getItem('unknownWords') || '[]')
@@ -835,6 +827,7 @@ function App() {
             showContent={showCardContent}
             onSettingsClick={() => setShowSettings(true)}
             onPlayPhonetic={playPhonetic}
+            speechMessage={speechMessage}
             onDontKnow={handleDontKnow}
           />
         </WordContainer>
