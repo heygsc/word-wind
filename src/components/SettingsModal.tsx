@@ -1,6 +1,8 @@
 import styled from 'styled-components'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useModalTransition } from '../hooks/useModalTransition'
 import { supabase } from '../utils/supabase'
+import { themes } from '../themes'
 
 const Modal = styled.div`
   position: fixed;
@@ -12,11 +14,13 @@ const Modal = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  background: rgba(15, 25, 19, 0.4);
+  backdrop-filter: blur(5px);
 `
 
-const ModalContent = styled.div<{ isOpen: boolean }>`
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
+const ModalContent = styled.div<{ $isOpen: boolean }>`
+  background: var(--surface);
+  color: var(--ink);
   backdrop-filter: blur(10px);
   border-radius: 24px;
   box-sizing: border-box;
@@ -27,16 +31,17 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  transform: scale(1.05);
+  transform: translateY(12px) scale(0.97);
   transition:
     opacity 0.3s ease-out,
     transform 0.3s ease-out;
   position: relative;
+  overflow-wrap: anywhere;
   ${props =>
-    props.isOpen &&
+    props.$isOpen &&
     `
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   `}
 
   @media (max-width: 768px) {
@@ -45,39 +50,24 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   }
 `
 
-const Button = styled.button<{ i?: number }>`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: ${props => (props.i === 0 ? '#000' : 'white')};
-  font-size: 16px;
-  font-weight: 500;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 30px;
+const Button = styled.button`
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+  padding: 12px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   cursor: pointer;
-  margin: 10px;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-  }
+  margin: 6px 0;
   &:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
-    &::before {
-      left: 100%;
-    }
+    filter: brightness(1.1);
   }
-  &:active {
-    transform: translateY(-1px) scale(1.02);
+`
+
+const ThemeButton = styled(Button)`
+  &[aria-pressed='true'] {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 `
 
@@ -87,7 +77,7 @@ const CloseButton = styled.button`
   right: 10px;
   background: none;
   border: none;
-  color: white;
+  color: var(--ink);
   font-size: 24px;
   cursor: pointer;
   padding: 0;
@@ -110,50 +100,32 @@ const Input = styled.input`
   width: 100%;
   padding: 10px;
   margin: 10px 0;
-  border: 1px solid #ccc;
+  border: 1px solid var(--line);
   border-radius: 5px;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--soft);
+  color: var(--ink);
   &::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
   }
 `
 
 interface SettingsModalProps {
   show: boolean
   onClose: () => void
-  backgrounds: string[]
-  themeColors: string[]
+  selectedBackground: number
   onSelectBackground: (index: number) => void
 }
 
 export const SettingsModal = ({
   show,
   onClose,
-  backgrounds,
-  themeColors,
+  selectedBackground,
   onSelectBackground
 }: SettingsModalProps) => {
-  const [isVisible, setIsVisible] = useState(show)
-  const [isOpen, setIsOpen] = useState(false)
+  const { isVisible, isOpen } = useModalTransition(show)
   const [email, setEmail] = useState('')
   const [content, setContent] = useState('')
-
-  useEffect(() => {
-    if (show) {
-      setIsVisible(true)
-      setTimeout(() => setIsOpen(true), 0)
-    } else {
-      setIsOpen(false)
-    }
-  }, [show])
-
-  const handleTransitionEnd = () => {
-    if (!isOpen) {
-      setIsVisible(false)
-    }
-  }
 
   const handleSubmit = async () => {
     if (!email.trim() && !content.trim()) {
@@ -195,12 +167,10 @@ export const SettingsModal = ({
 
   return (
     <Modal onClick={onClose}>
-      <ModalContent
-        isOpen={isOpen}
-        onClick={e => e.stopPropagation()}
-        onTransitionEnd={handleTransitionEnd}
-      >
-        <CloseButton onClick={onClose}>×</CloseButton>
+      <ModalContent $isOpen={isOpen} onClick={e => e.stopPropagation()}>
+        <CloseButton aria-label="关闭" onClick={onClose}>
+          ×
+        </CloseButton>
         <p>
           喜欢这个网站？
           <br />
@@ -210,7 +180,7 @@ export const SettingsModal = ({
             href="https://github.com/heygsc"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: 'orange' }}
+            style={{ color: 'var(--accent)' }}
           >
             https://github.com/heygsc
           </a>
@@ -221,7 +191,7 @@ export const SettingsModal = ({
             href="https://github.com/heygsc/word-wind"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: 'orange' }}
+            style={{ color: 'var(--accent)' }}
           >
             https://github.com/heygsc/word-wind
           </a>{' '}
@@ -233,18 +203,16 @@ export const SettingsModal = ({
         <h2>设置</h2>
         <p>选择背景：</p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {backgrounds.map((_, i) => (
-            <Button
-              key={i}
-              i={i}
-              style={{ background: themeColors[i] }}
-              onClick={() => {
-                onSelectBackground(i)
-                onClose()
-              }}
+          {themes.map((theme, i) => (
+            <ThemeButton
+              key={theme.name}
+              style={{ background: theme.soft, color: theme.ink, borderColor: theme.line }}
+              aria-pressed={selectedBackground === i}
+              onClick={() => onSelectBackground(i)}
             >
-              背景{i + 1}
-            </Button>
+              {theme.name}
+              {selectedBackground === i ? ' ✓' : ''}
+            </ThemeButton>
           ))}
         </div>
         <h2>反馈</h2>

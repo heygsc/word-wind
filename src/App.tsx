@@ -1,11 +1,11 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { GlobalStyle } from './components/GlobalStyles'
-import { gradientShift, pulse } from './components/animations'
 import { WordCard } from './components/WordCard'
 import { SettingsModal } from './components/SettingsModal'
 import { UnknownWordsModal } from './components/UnknownWordsModal'
 import { supabase } from './utils/supabase'
+import { themes } from './themes'
 
 interface Translation {
   type: string
@@ -30,88 +30,133 @@ interface UnknownWord {
 }
 
 // 主容器
-const Container = styled.div<{ bg: string; textColor: string }>`
+const Container = styled.div<{ $palette: (typeof themes)[number] }>`
+  --ink: ${p => p.$palette.ink};
+  --muted: ${p => p.$palette.muted};
+  --surface: ${p => p.$palette.surface};
+  --soft: ${p => p.$palette.soft};
+  --line: ${p => p.$palette.line};
+  --accent: ${p => p.$palette.accent};
+  --on-accent: ${p => p.$palette.onAccent};
+  color-scheme: ${p => (p.$palette.dark ? 'dark' : 'light')};
   min-height: 100vh;
-  background: ${props => props.bg};
-  background-size: 400% 400%;
-  animation: ${gradientShift} 15s ease infinite;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  background: ${p => p.$palette.background};
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: 208px minmax(0, 800px) 156px;
+  grid-template-areas:
+    'brand search .'
+    '. message .'
+    'sidebar content actions'
+    '. arrows .';
+  gap: 24px 32px;
+  align-items: start;
+  align-content: start;
   justify-content: center;
-  padding: 80px 20px;
-  font-family: 'Inter', sans-serif;
-  color: ${props => props.textColor};
+  padding: 44px 32px 64px;
   position: relative;
-  overflow: hidden;
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background:
-      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.3) 0%, transparent 50%);
-    animation: ${pulse} 8s ease-in-out infinite;
-  }
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 80px 10px;
-    align-items: stretch;
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'brand search'
+      'message message'
+      'sidebar actions'
+      'content content'
+      'arrows arrows';
   }
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'brand' 'search' 'message' 'sidebar' 'actions' 'content' 'arrows';
+    gap: 16px;
+    padding: 24px 16px 40px;
+  }
+`
+
+const Brand = styled.header`
+  grid-area: brand;
+  padding: 4px 0;
+  strong {
+    display: block;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -1px;
+  }
+`
+
+const PanelLabel = styled.label`
+  display: block;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 2px;
 `
 
 // 下拉框容器
 const Sidebar = styled.div`
-  position: fixed;
-  top: 80px;
-  left: 20px;
+  grid-area: sidebar;
+  min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface);
   border-radius: 10px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--line);
   z-index: 10;
 
-  @media (max-width: 768px) {
-    position: static;
-    width: 100%;
-    margin-bottom: 20px;
+  @media (max-width: 600px) {
     padding: 15px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    & > label {
+      grid-column: 1 / -1;
+      margin: 0;
+    }
+    & > div {
+      margin: 0;
+      padding: 0;
+      align-self: center;
+    }
+    & > form,
+    & > button {
+      margin-top: 0;
+    }
   }
 `
 
 // 下拉框样式
 const Select = styled.select<{ textColor: string }>`
   padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
   cursor: pointer;
   &:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--line);
   }
 `
 
 // 显示框样式
 const DisplayBox = styled.div<{ textColor: string }>`
   padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
   margin-top: 10px;
   white-space: pre-line;
+  line-height: 1.9;
+  color: var(--muted);
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  padding: 16px 0;
 `
 
 const PageSelectorForm = styled.form`
@@ -122,17 +167,17 @@ const PageSelectorForm = styled.form`
 
 const PageInput = styled.input<{ textColor: string }>`
   min-width: 0;
-  width: 92px;
+  width: 80px;
+  flex: 1;
   padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
 
   &:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--line);
   }
 
   &::placeholder {
@@ -143,19 +188,15 @@ const PageInput = styled.input<{ textColor: string }>`
 
 const PageJumpButton = styled.button<{ textColor: string }>`
   padding: 10px 12px;
-  border: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  &:focus {
-    outline: none;
+    background: var(--line);
   }
 
   &:disabled {
@@ -169,43 +210,33 @@ const ContentToggleButton = styled(PageJumpButton)`
 `
 
 const SearchForm = styled.form`
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-area: search;
+  position: relative;
+  justify-self: center;
   z-index: 20;
   display: flex;
-  width: min(420px, calc(100vw - 40px));
+  width: 100%;
   padding: 8px;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 12px;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-
-  @media (max-width: 768px) {
-    position: static;
-    transform: none;
-    width: 100%;
-    margin-bottom: 14px;
-  }
 `
 
 const SearchInput = styled.input<{ textColor: string }>`
   min-width: 0;
   flex: 1;
   padding: 10px 12px;
-  border: none;
+  border: 1px solid var(--line);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
 
   &:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.55);
+    outline: 2px solid var(--accent);
     outline-offset: 1px;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--line);
   }
 
   &::placeholder {
@@ -216,143 +247,110 @@ const SearchInput = styled.input<{ textColor: string }>`
 
 const SearchButton = styled(PageJumpButton)`
   min-width: 72px;
+  background: var(--accent);
+  color: var(--on-accent);
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    filter: brightness(1.1);
+  }
 `
 
 const SearchMessage = styled.div<{ $isError: boolean }>`
-  position: fixed;
-  top: 78px;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-area: message;
+  position: relative;
+  justify-self: center;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   z-index: 20;
   padding: 6px 12px;
   border-radius: 8px;
   background: rgba(20, 20, 20, 0.7);
   color: ${props => (props.$isError ? '#fecaca' : '#fff')};
   font-size: 14px;
-  backdrop-filter: blur(10px);
-
-  @media (max-width: 768px) {
-    position: static;
-    transform: none;
-    width: 100%;
-    margin: -6px 0 14px;
-    text-align: center;
-  }
 `
 
-// 固定设置按钮
-const FixedSettingsButton = styled.button<{ textColor: string }>`
-  position: fixed;
-  top: 80px;
-  right: 20px;
+// 设置按钮
+const SettingsButton = styled.button<{ textColor: string }>`
+  position: relative;
   padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
   cursor: pointer;
-  backdrop-filter: blur(10px);
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-  &:focus {
-    outline: none;
+    background: var(--line);
   }
   z-index: 10;
 
   @media (max-width: 768px) {
-    position: static;
     padding: 8px 15px;
     font-size: 14px;
   }
 `
 
 // 不会单词按钮
-const UnknownWordsButton = styled(FixedSettingsButton)`
-  top: 150px;
-`
+const UnknownWordsButton = styled(SettingsButton)``
 
 // 大箭头按钮
 const ArrowButton = styled.button<{ textColor: string }>`
   padding: 15px 30px;
-  border: none;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: ${props => props.textColor};
-  font-size: 18px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   display: flex;
   align-items: center;
   gap: 10px;
-  backdrop-filter: blur(10px);
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-  }
-  &:focus {
-    outline: none;
+    background: var(--line);
   }
   &:disabled {
     opacity: 0.5;
   }
 `
 
-// 左箭头按钮
-const LeftArrowButton = styled(ArrowButton)`
-  position: fixed;
-  bottom: 200px;
-  left: 50px;
-  z-index: 10;
-
-  @media (max-width: 768px) {
-    position: static;
-  }
-`
-
-// 右箭头按钮
-const RightArrowButton = styled(ArrowButton)`
-  position: fixed;
-  bottom: 200px;
-  right: 50px;
-  z-index: 10;
-
-  @media (max-width: 768px) {
-    position: static;
-  }
-`
-
-// 箭头按钮容器（移动端）
+// 切词按钮在卡片下方占据独立空间
 const ArrowContainer = styled.div`
-  @media (max-width: 768px) {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 20px;
+  grid-area: arrows;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    & > button {
+      padding: 12px 16px;
+    }
   }
 `
 
-// 按钮容器（移动端）
 const ButtonContainer = styled.div`
-  @media (max-width: 768px) {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 20px;
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
+`
+
+const WordContainer = styled.main`
+  grid-area: content;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
 `
 
 const BACKGROUND_STORAGE_KEY = 'selectedBackground'
 const CONTENT_VISIBILITY_STORAGE_KEY = 'wordCardContentVisible'
-
-const backgrounds = [
-  'linear-gradient(-45deg, #f5f5dc, #ede0c8, #f5f5dc)',
-  'linear-gradient(-45deg, #f39c12, #e67e22, #e74c3c, #c0392b, #f39c12)',
-  'linear-gradient(-45deg, #1abc9c, #16a085, #2ecc71, #27ae60, #1abc9c)',
-  'linear-gradient(-45deg, #2196f3, #21cbf3, #2196f3)',
-  'linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e, #533483)'
-]
-
-const themeColors = ['#f5f5dc', '#f39c12', '#1abc9c', '#2196f3', '#1a1a2e']
 
 const libraryKeys = ['chuzhong', 'gaozhong', 'cet4', 'cet6', 'kaoyan', 'toefl', 'sat']
 
@@ -393,7 +391,7 @@ function App() {
   const getStoredBackgroundIndex = () => {
     const stored = localStorage.getItem(BACKGROUND_STORAGE_KEY)
     const index = stored ? Number.parseInt(stored, 10) : 0
-    return Number.isInteger(index) && index >= 0 && index < backgrounds.length ? index : 0
+    return Number.isInteger(index) && index >= 0 && index < themes.length ? index : 0
   }
 
   // 从localStorage获取内容显示设置
@@ -747,7 +745,10 @@ function App() {
   return (
     <>
       <GlobalStyle />
-      <Container bg={backgrounds[bgIndex]} textColor={bgIndex === 0 ? '#000' : '#fff'}>
+      <Container $palette={themes[bgIndex]}>
+        <Brand>
+          <strong>Word Wind</strong>
+        </Brand>
         <SearchForm onSubmit={handleWordSearch} role="search">
           <SearchInput
             textColor={bgIndex === 0 ? '#000' : '#fff'}
@@ -775,7 +776,9 @@ function App() {
           </SearchMessage>
         )}
         <Sidebar>
+          <PanelLabel htmlFor="word-library">学习词库</PanelLabel>
           <Select
+            id="word-library"
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             value={selectedLibrary}
             onChange={e => handleLibraryChange(e.target.value)}
@@ -819,7 +822,7 @@ function App() {
             {showCardContent ? '隐藏释义' : '显示释义'}
           </ContentToggleButton>
         </Sidebar>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        <WordContainer>
           <WordCard
             word={word}
             us={us}
@@ -834,30 +837,30 @@ function App() {
             onPlayPhonetic={playPhonetic}
             onDontKnow={handleDontKnow}
           />
-        </div>
+        </WordContainer>
         <ArrowContainer>
-          <LeftArrowButton
+          <ArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => changeWord(-1)}
             disabled={isLoading || currentIndex <= 1}
           >
-            ⬅️ 上一个
-          </LeftArrowButton>
-          <RightArrowButton
+            ← 上一个
+          </ArrowButton>
+          <ArrowButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => changeWord(1)}
             disabled={isLoading || currentIndex >= totalWords}
           >
-            下一个 ➡️
-          </RightArrowButton>
+            下一个 →
+          </ArrowButton>
         </ArrowContainer>
         <ButtonContainer>
-          <FixedSettingsButton
+          <SettingsButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => setShowSettings(true)}
           >
             设置&反馈
-          </FixedSettingsButton>
+          </SettingsButton>
           <UnknownWordsButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
             onClick={() => setShowUnknown(true)}
@@ -868,8 +871,7 @@ function App() {
         <SettingsModal
           show={showSettings}
           onClose={() => setShowSettings(false)}
-          backgrounds={backgrounds}
-          themeColors={themeColors}
+          selectedBackground={bgIndex}
           onSelectBackground={handleBackgroundChange}
         />
         <UnknownWordsModal

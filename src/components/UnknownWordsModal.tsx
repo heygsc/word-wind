@@ -1,5 +1,6 @@
 import styled from 'styled-components'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useModalTransition } from '../hooks/useModalTransition'
 
 interface Translation {
   type: string
@@ -144,12 +145,14 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  background: rgba(15, 25, 19, 0.4);
+  backdrop-filter: blur(5px);
 `
 
 // 模态框内容
-const ModalContent = styled.div<{ isOpen: boolean }>`
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
+const ModalContent = styled.div<{ $isOpen: boolean }>`
+  background: var(--surface);
+  color: var(--ink);
   backdrop-filter: blur(10px);
   border-radius: 24px;
   padding: 40px;
@@ -159,22 +162,23 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  transform: scale(1.05);
+  transform: translateY(12px) scale(0.97);
   transition:
     opacity 0.3s ease-out,
     transform 0.3s ease-out;
   position: relative;
+  overflow-wrap: anywhere;
   ${props =>
-    props.isOpen &&
+    props.$isOpen &&
     `
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   `}
 `
 
 // 标题
 const ModalTitle = styled.h2`
-  color: white;
+  color: var(--ink);
   margin-bottom: 20px;
   text-align: center;
 `
@@ -186,7 +190,7 @@ const CloseButton = styled.button`
   right: 10px;
   background: none;
   border: none;
-  color: white;
+  color: var(--ink);
   font-size: 24px;
   cursor: pointer;
   padding: 0;
@@ -207,14 +211,15 @@ const CloseButton = styled.button`
 
 // 单词项
 const WordItem = styled.div`
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--soft);
   backdrop-filter: blur(10px);
   margin: 10px 0;
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  border: 1px solid var(--line);
+  color: var(--ink);
   position: relative;
+  overflow-wrap: anywhere;
 `
 
 // 删除按钮
@@ -239,8 +244,8 @@ const ExportButton = styled.button`
   padding: 12px 16px;
   border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--soft);
+  color: var(--ink);
   font-size: 16px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   transition: background-color 0.3s;
@@ -260,24 +265,8 @@ export const UnknownWordsModal = ({
   unknownWords,
   onRemove
 }: UnknownWordsModalProps) => {
-  const [isVisible, setIsVisible] = useState(show)
-  const [isOpen, setIsOpen] = useState(false)
+  const { isVisible, isOpen } = useModalTransition(show)
   const [isExporting, setIsExporting] = useState(false)
-
-  useEffect(() => {
-    if (show) {
-      setIsVisible(true)
-      setTimeout(() => setIsOpen(true), 0)
-    } else {
-      setIsOpen(false)
-    }
-  }, [show])
-
-  const handleTransitionEnd = () => {
-    if (!isOpen) {
-      setIsVisible(false)
-    }
-  }
 
   const handleExportWord = async () => {
     if (unknownWords.length === 0 || isExporting) return
@@ -306,14 +295,12 @@ export const UnknownWordsModal = ({
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent
-        isOpen={isOpen}
-        onClick={e => e.stopPropagation()}
-        onTransitionEnd={handleTransitionEnd}
-      >
-        <CloseButton onClick={onClose}>×</CloseButton>
+      <ModalContent $isOpen={isOpen} onClick={e => e.stopPropagation()}>
+        <CloseButton aria-label="关闭" onClick={onClose}>
+          ×
+        </CloseButton>
         <ModalTitle>不会的单词</ModalTitle>
-        <p style={{ color: 'white', textAlign: 'center', marginBottom: '20px' }}>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: '20px' }}>
           点击单词面板底部的"不会"按钮，即可标记
         </p>
         <ExportButton
@@ -324,7 +311,7 @@ export const UnknownWordsModal = ({
           {isExporting ? '导出中...' : '导出 Word'}
         </ExportButton>
         {unknownWords.length === 0 ? (
-          <p style={{ color: 'white', textAlign: 'center' }}>暂无不会的单词</p>
+          <p style={{ color: 'var(--muted)', textAlign: 'center' }}>暂无不会的单词</p>
         ) : (
           unknownWords.map((item, index) => (
             <WordItem key={index}>
