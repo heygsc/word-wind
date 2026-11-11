@@ -111,6 +111,35 @@ const Input = styled.input`
   }
 `
 
+const FeedbackInput = styled.textarea`
+  display: block;
+  width: 100%;
+  min-height: 140px;
+  padding: 10px;
+  margin: 10px 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-sizing: border-box;
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  &::placeholder {
+    color: var(--muted);
+  }
+`
+
+const CharacterCount = styled.p`
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: right;
+`
+
+const FEEDBACK_MAX_LENGTH = 2000
+
 interface SettingsModalProps {
   show: boolean
   onClose: () => void
@@ -139,6 +168,10 @@ export const SettingsModal = ({
     }
     if (!content.trim()) {
       alert('内容不能为空')
+      return
+    }
+    if (content.length > FEEDBACK_MAX_LENGTH) {
+      alert(`反馈内容不能超过 ${FEEDBACK_MAX_LENGTH} 字符`)
       return
     }
     try {
@@ -217,10 +250,11 @@ export const SettingsModal = ({
           ))}
         </div>
         <h2>反馈</h2>
-        <label>
+        <label htmlFor="feedback-email">
           邮箱：<span style={{ color: 'red' }}>*</span>
         </label>
         <Input
+          id="feedback-email"
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
@@ -228,16 +262,25 @@ export const SettingsModal = ({
           maxLength={100}
           required
         />
-        <label>
+        <label htmlFor="feedback-content">
           内容：<span style={{ color: 'red' }}>*</span>
         </label>
-        <Input
+        <FeedbackInput
+          id="feedback-content"
+          rows={6}
           value={content}
           onChange={e => setContent(e.target.value)}
           placeholder="请输入反馈内容"
-          maxLength={100}
+          maxLength={FEEDBACK_MAX_LENGTH}
+          aria-describedby="feedback-count feedback-limit"
           required
         />
+        <CharacterCount id="feedback-count">
+          {content.length} / {FEEDBACK_MAX_LENGTH} 字符
+        </CharacterCount>
+        <CharacterCount id="feedback-limit" role="status">
+          {content.length >= FEEDBACK_MAX_LENGTH && '已达到字数上限，请精简内容后再输入。'}
+        </CharacterCount>
         <Button onClick={handleSubmit}>提交</Button>
       </ModalContent>
     </Modal>
