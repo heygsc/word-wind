@@ -213,6 +213,12 @@ export const WordCard = ({
           🇬🇧 🔊 {uk}
         </PlayButton>
       </div>
+      <div style={{ textAlign: 'center' }}>
+        <Button onClick={handleDontKnow}>不会</Button>
+        <FeedbackText type={feedback?.type ?? 'success'} aria-live="polite">
+          {feedback?.message}
+        </FeedbackText>
+      </div>
       {showContent && (
         <>
           <Text>
@@ -253,12 +259,6 @@ export const WordCard = ({
           )}
         </>
       )}
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <Button onClick={handleDontKnow}>不会</Button>
-        <FeedbackText type={feedback?.type ?? 'success'} aria-live="polite">
-          {feedback?.message}
-        </FeedbackText>
-      </div>
     </Card>
   )
 }

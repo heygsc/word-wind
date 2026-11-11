@@ -301,7 +301,7 @@ export const UnknownWordsModal = ({
         </CloseButton>
         <ModalTitle>不会的单词</ModalTitle>
         <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: '20px' }}>
-          点击单词面板底部的"不会"按钮，即可标记
+          点击单词音标下方的“不会”按钮，即可标记
         </p>
         <ExportButton
           type="button"
