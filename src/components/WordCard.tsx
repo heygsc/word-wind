@@ -149,7 +149,7 @@ function TextPlayButtons({
 
   return (
     <InlinePlayGroup role="group" aria-label={`${kind}朗读`}>
-      {(['us', 'uk'] as const).map(accent => {
+      {(['uk', 'us'] as const).map(accent => {
         const label = `${accent === 'us' ? '美式' : '英式'}朗读${kind}`
         return (
           <InlinePlayButton
@@ -274,18 +274,18 @@ export const WordCard = ({
         }}
       >
         <PlayButton
-          aria-label="播放美式发音"
-          title="播放美式发音"
-          onClick={() => onPlayPhonetic('us')}
-        >
-          🇺🇸 🔊 {us}
-        </PlayButton>
-        <PlayButton
           aria-label="播放英式发音"
           title="播放英式发音"
           onClick={() => onPlayPhonetic('uk')}
         >
           🇬🇧 🔊 {uk}
+        </PlayButton>
+        <PlayButton
+          aria-label="播放美式发音"
+          title="播放美式发音"
+          onClick={() => onPlayPhonetic('us')}
+        >
+          🇺🇸 🔊 {us}
         </PlayButton>
       </div>
       <SpeechMessage role="status" aria-live="polite" aria-atomic="true">
