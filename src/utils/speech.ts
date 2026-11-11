@@ -1,10 +1,10 @@
 const normalizeLanguage = (language: string) => language.replace(/_/g, '-').toLowerCase()
 
 const errorMessages: Partial<Record<SpeechSynthesisErrorCode, string>> = {
-  'not-allowed': '浏览器未允许播放，请再次点击音标；仍无声音时，请在系统浏览器中打开。',
+  'not-allowed': '浏览器未允许播放，请再次点击朗读按钮；仍无声音时，请在系统浏览器中打开。',
   'language-unavailable':
     '设备没有可用的英语语音，请在系统语音设置中安装英语语音包，或更换浏览器。',
-  'voice-unavailable': '所选语音暂不可用，请再次点击音标，或更换浏览器。',
+  'voice-unavailable': '所选语音暂不可用，请再次点击朗读按钮，或更换浏览器。',
   'synthesis-unavailable': '设备的语音服务不可用，请检查系统文字转语音设置，或更换浏览器。',
   'synthesis-failed': '语音合成失败，请重试，或在系统浏览器中打开。',
   network: '语音服务连接失败，请检查网络后重试。',
@@ -58,9 +58,9 @@ export function createSpeechPlayer(onMessage: (message: string) => void) {
 
   return {
     stop,
-    play(word: string, accent: 'us' | 'uk') {
+    play(text: string, accent: 'us' | 'uk') {
       stop()
-      if (!word.trim()) return
+      if (!text.trim()) return
       if (!supported) {
         onMessage('当前浏览器不支持朗读，请复制链接到系统浏览器中打开。')
         return
@@ -78,7 +78,7 @@ export function createSpeechPlayer(onMessage: (message: string) => void) {
         const candidates = matchingVoices.length ? matchingVoices : englishVoices
         const voice = candidates.find(v => v.localService) ?? candidates[0]
         const fallback = voice && normalizeLanguage(voice.lang) !== normalizeLanguage(language)
-        const utterance = new window.SpeechSynthesisUtterance(word)
+        const utterance = new window.SpeechSynthesisUtterance(text)
         utterance.lang = voice ? voice.lang.replace(/_/g, '-') : language
         if (voice) utterance.voice = voice
         active = utterance
@@ -97,7 +97,7 @@ export function createSpeechPlayer(onMessage: (message: string) => void) {
           if (active !== utterance) return
           release()
           if (event.error === 'canceled' || event.error === 'interrupted') {
-            onMessage('播放已中断，请再次点击音标。')
+            onMessage('播放已中断，请再次点击朗读按钮。')
             return
           }
           onMessage(errorMessages[event.error] ?? '发音失败，请重试，或在系统浏览器中打开。')
@@ -106,7 +106,7 @@ export function createSpeechPlayer(onMessage: (message: string) => void) {
           if (active !== utterance) return
           stop()
           onMessage(
-            '发音未能启动，请再次点击音标；仍无声音时，请检查系统英语语音设置或更换浏览器。'
+            '发音未能启动，请再次点击朗读按钮；仍无声音时，请检查系统英语语音设置或更换浏览器。'
           )
         }, 8000)
 

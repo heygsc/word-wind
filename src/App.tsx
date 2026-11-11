@@ -569,7 +569,7 @@ function App() {
     })
   }
 
-  const { playPhonetic, speechMessage } = usePronunciation(
+  const { playPhonetic, playText, speechMessage } = usePronunciation(
     word,
     `${selectedLibrary}:${currentIndex}`
   )
@@ -827,6 +827,7 @@ function App() {
             showContent={showCardContent}
             onSettingsClick={() => setShowSettings(true)}
             onPlayPhonetic={playPhonetic}
+            onPlayText={playText}
             speechMessage={speechMessage}
             onDontKnow={handleDontKnow}
           />

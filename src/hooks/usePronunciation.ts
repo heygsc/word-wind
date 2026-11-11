@@ -23,5 +23,9 @@ export function usePronunciation(word: string, location: string) {
     playerRef.current?.play(word, accent)
   }
 
-  return { playPhonetic, speechMessage }
+  const playText = (text: string, accent: 'us' | 'uk') => {
+    playerRef.current?.play(text, accent)
+  }
+
+  return { playPhonetic, playText, speechMessage }
 }

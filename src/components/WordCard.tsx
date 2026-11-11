@@ -106,6 +106,67 @@ const PlayButton = styled(Button)`
   margin: 0;
 `
 
+const InlinePlayButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  min-width: 48px;
+  height: 32px;
+  padding: 0 6px;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--ink);
+  cursor: pointer;
+  &:hover {
+    background: var(--line);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+`
+
+const InlinePlayGroup = styled.span`
+  display: inline-flex;
+  vertical-align: middle;
+  gap: 4px;
+  margin-left: 6px;
+`
+
+function TextPlayButtons({
+  text,
+  kind,
+  onPlay
+}: {
+  text: string
+  kind: string
+  onPlay: (text: string, accent: 'us' | 'uk') => void
+}) {
+  if (!text.trim()) return null
+
+  return (
+    <InlinePlayGroup role="group" aria-label={`${kind}朗读`}>
+      {(['us', 'uk'] as const).map(accent => {
+        const label = `${accent === 'us' ? '美式' : '英式'}朗读${kind}`
+        return (
+          <InlinePlayButton
+            key={accent}
+            type="button"
+            aria-label={`${label}：${text}`}
+            title={label}
+            onClick={() => onPlay(text, accent)}
+          >
+            <span aria-hidden="true">{accent === 'us' ? '🇺🇸' : '🇬🇧'} 🔊</span>
+          </InlinePlayButton>
+        )
+      })}
+    </InlinePlayGroup>
+  )
+}
+
 const FeedbackText = styled.div<{ type: 'success' | 'info' }>`
   min-height: 24px;
   margin-top: 4px;
@@ -135,6 +196,7 @@ interface WordCardProps {
   showContent: boolean
   onSettingsClick: () => void
   onPlayPhonetic: (type: 'us' | 'uk') => void
+  onPlayText: (text: string, accent: 'us' | 'uk') => void
   speechMessage: string
   onDontKnow: (word: string, translations: Translation[]) => boolean
 }
@@ -150,6 +212,7 @@ export const WordCard = ({
   isLoading,
   showContent,
   onPlayPhonetic,
+  onPlayText,
   speechMessage,
   onDontKnow
 }: WordCardProps) => {
@@ -253,6 +316,7 @@ export const WordCard = ({
             {sentences.map((s, i) => (
               <ListItem key={i}>
                 <strong>{s.sentence}</strong>
+                <TextPlayButtons text={s.sentence} kind="例句" onPlay={onPlayText} />
                 <br />
                 {s.translation}
               </ListItem>
@@ -266,7 +330,10 @@ export const WordCard = ({
               <List>
                 {phrases.map((p, i) => (
                   <ListItem key={i}>
-                    <strong>{p.phrase}:</strong> {p.translation}
+                    <strong>{p.phrase}</strong>
+                    <TextPlayButtons text={p.phrase} kind="短语" onPlay={onPlayText} />
+                    {'：'}
+                    {p.translation}
                   </ListItem>
                 ))}
               </List>
