@@ -48,8 +48,7 @@ const Container = styled.div<{ $palette: (typeof themes)[number] }>`
   grid-template-areas:
     'brand search .'
     '. message .'
-    'sidebar content actions'
-    '. arrows .';
+    'sidebar content actions';
   gap: 24px 32px;
   align-items: start;
   align-content: start;
@@ -63,12 +62,11 @@ const Container = styled.div<{ $palette: (typeof themes)[number] }>`
       'brand search'
       'message message'
       'sidebar actions'
-      'content content'
-      'arrows arrows';
+      'content content';
   }
   @media (max-width: 600px) {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'brand' 'search' 'message' 'sidebar' 'actions' 'content' 'arrows';
+    grid-template-areas: 'brand' 'search' 'message' 'sidebar' 'actions' 'content';
     gap: 16px;
     padding: 24px 16px 40px;
   }
@@ -336,9 +334,8 @@ const ArrowButton = styled.button<{ textColor: string }>`
   }
 `
 
-// 切词按钮在卡片下方占据独立空间
-const ArrowContainer = styled.div`
-  grid-area: arrows;
+// 切词按钮位于卡片上方，左右分布
+const ArrowContainer = styled.nav`
   position: relative;
   z-index: 1;
   display: flex;
@@ -870,6 +867,24 @@ function App() {
           )}
         </Sidebar>
         <WordContainer>
+          <ArrowContainer aria-label="切换单词">
+            <ArrowButton
+              type="button"
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              onClick={() => changeWord(-1)}
+              disabled={isLoading || currentIndex <= 1}
+            >
+              ← 上一个
+            </ArrowButton>
+            <ArrowButton
+              type="button"
+              textColor={bgIndex === 0 ? '#000' : '#fff'}
+              onClick={() => changeWord(1)}
+              disabled={isLoading || currentIndex >= totalWords}
+            >
+              下一个 →
+            </ArrowButton>
+          </ArrowContainer>
           <ModeSwitch role="group" aria-label="学习模式">
             <button type="button" aria-pressed={!isSpelling} onClick={() => setIsSpelling(false)}>
               看词学习
@@ -897,22 +912,6 @@ function App() {
             onDontKnow={handleDontKnow}
           />
         </WordContainer>
-        <ArrowContainer>
-          <ArrowButton
-            textColor={bgIndex === 0 ? '#000' : '#fff'}
-            onClick={() => changeWord(-1)}
-            disabled={isLoading || currentIndex <= 1}
-          >
-            ← 上一个
-          </ArrowButton>
-          <ArrowButton
-            textColor={bgIndex === 0 ? '#000' : '#fff'}
-            onClick={() => changeWord(1)}
-            disabled={isLoading || currentIndex >= totalWords}
-          >
-            下一个 →
-          </ArrowButton>
-        </ArrowContainer>
         <ButtonContainer>
           <SettingsButton
             textColor={bgIndex === 0 ? '#000' : '#fff'}
